@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -24,6 +25,18 @@ func main() {
 	notePath = filepath.Join(notePath, "Documents", "note")
 
 	var path string = filepath.Join(notePath, *base, *filename)
+
+	if len(args) != 0 {
+		switch args[0] {
+			case "open": 
+				open(path) 
+				return
+			case "list": 
+				list(notePath)
+				return
+		}
+	}
+
 	pathExists, err := checkPath(path)
 	if !pathExists {
 		if err != nil {
@@ -47,6 +60,25 @@ func main() {
 	}
 
 	fmt.Printf("Noted at %s in base %s\n", *filename, *base)
+}
+
+func open(path string) error {
+	cmd := exec.Command("notepad.exe", path)
+	err := cmd.Start()
+	if err != nil { return err }
+	return nil
+}
+
+func list(notePath string) error {
+	entries, err := os.ReadDir(notePath)
+	if err != nil {return err}
+	
+	for _, entry := range entries {
+		if entry.IsDir() {
+			fmt.Println(entry.Name())
+		}
+	}
+	return nil
 }
 
 func continuedText(path string) error {
